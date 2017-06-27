@@ -12,7 +12,7 @@ import java.util.Properties;
  * Created by tamas on 2017. 06. 27..
  */
 public class DbUtil {
-    public static Connection getConnectio() {
+    public static Connection getConnection() {
         Connection connection = null;
         Properties p = getProperties();
 
