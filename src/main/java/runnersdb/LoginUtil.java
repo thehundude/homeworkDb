@@ -13,7 +13,7 @@ public class LoginUtil {
     private static String usernameInput;
     private static String passwordInput;
 
-    public static void login () throws SQLException {
+    public static User login () throws SQLException {
         Connection connection = DbUtil.getConnection();
 
         Scanner reader = new Scanner(System.in);
@@ -38,11 +38,8 @@ public class LoginUtil {
         loggedInUser.setUserPassword(rs.getString(3));
         loggedInUser.setUserCanEdit(rs.getBoolean(4));
 
-        // egyelőre csak feedback, hogy beolvasta a felhasználót, létezik ilyen
-        if (rs != null) {
-            System.out.println("Van ilyen felhasználó.");
-        }
-
         connection.close();
+
+        return loggedInUser;
     }
 }
