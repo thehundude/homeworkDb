@@ -30,6 +30,7 @@ public class MenuUtil {
 
         switch (chosenMenu) {
             case 1:
+                Athlete.clubAthletes();
                 break;
             case 2:
                 break;
