@@ -96,13 +96,14 @@ public class Athlete {
 
     // lekérdezésekhez használt függvények
     public static void clubAthletes() {
-        System.out.println("A Baranya SE futói:\nFutó neve\tSzül.idő\tNemzetiség\tElső helyek száma");
+        System.out.println("A Baranya SE futói:\nFutó neve\tSzül.idő\tNemzetiség\tI.\tII.\tIII.");
 
         Connection connection = DbUtil.getConnection();
 
         ArrayList<Athlete> athletes = new ArrayList();
 
         try {
+            // lekérjük a futók adatait plusz az első helyek számát
             PreparedStatement ps = connection.prepareStatement(
                     "SELECT athlete.athlete_name, athlete.dob, athlete.nationality, COUNT(athlete_race.first_place) " +
                             "FROM athlete " +
@@ -124,13 +125,46 @@ public class Athlete {
                 athletes.add(athlete);
             }
 
+            // itt csak a második helyek számát kérjük le
+            ps = connection.prepareStatement("SELECT COUNT(athlete_race.second_place)\n" +
+                    "FROM athlete\n" +
+                    "FULL OUTER JOIN athlete_race ON athlete.athlete_id = athlete_race.second_place\n" +
+                    "WHERE org_id = 1\n" +
+                    "GROUP BY athlete.athlete_name, athlete.dob, athlete.nationality\n" +
+                    "ORDER BY athlete_name ASC");
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                for (Athlete item : athletes) {
+                    item.secondPlace = rs.getInt(1);
+                }
+            }
+
+            // itt csak a harmadik helyek számát kérjük le
+            ps = connection.prepareStatement("SELECT COUNT(athlete_race.third_place)\n" +
+                    "FROM athlete\n" +
+                    "FULL OUTER JOIN athlete_race ON athlete.athlete_id = athlete_race.third_place\n" +
+                    "WHERE org_id = 1\n" +
+                    "GROUP BY athlete.athlete_name, athlete.dob, athlete.nationality\n" +
+                    "ORDER BY athlete_name ASC");
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                for (Athlete item : athletes) {
+                    item.thirdPlace = rs.getInt(1);
+                }
+            }
+
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         for (Athlete item : athletes) {
-            System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\n");
+            System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\t" +
+            item.secondPlace + "\t" + item.thirdPlace + "\n");
         }
     }
 }
