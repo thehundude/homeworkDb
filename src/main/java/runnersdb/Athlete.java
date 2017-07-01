@@ -122,9 +122,9 @@ public class Athlete {
                 athlete.setFirstPlace(rs.getInt(4));
 
                 athletes.add(athlete);
-
-                connection.close();
             }
+
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
