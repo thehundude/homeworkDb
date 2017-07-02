@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Scanner;
 
 /**
  * Created by tamas on 2017. 07. 01..
@@ -95,6 +96,7 @@ public class Athlete {
     }
 
     // lekérdezésekhez használt függvények
+    // klub futóinak kiírása
     public static void clubAthletes() {
         System.out.println("A Baranya SE futói:\nFutó neve\tSzül.idő\tNemzetiség\tI.\tII.\tIII.");
 
@@ -165,6 +167,57 @@ public class Athlete {
         for (Athlete item : athletes) {
             System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\t" +
             item.secondPlace + "\t" + item.thirdPlace + "\n");
+        }
+    }
+
+    // futó hozzáadása
+    public static void addAthlete(){
+        Connection connection = DbUtil.getConnection();
+        Scanner reader = new Scanner(System.in);
+
+        // adatok bekérése
+        System.out.print("Írd be a futó nevét:");
+        String athleteName = reader.nextLine();
+        System.out.print("Mikor született? (ÉÉÉÉ-HH-NN formátumban)");
+        String athleteDob = reader.nextLine();
+        System.out.print("Milyen nemzetiségű?");
+        String athleteNationality = reader.nextLine();
+
+        System.out.print("Melyik sportegyesület tagja?");
+        String athleteOrg = reader.nextLine();
+        int athleteOrgId = 0;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = connection.prepareStatement("SELECT org_id FROM organization WHERE org_name = '" + athleteOrg + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            athleteOrgId = rs.getInt(1);
+        } catch (SQLException e) {
+            // e.printStackTrace();
+            System.out.print("Nincs ilyen sportegyesület!");
+        }
+
+        System.out.print("Ki az edzője?");
+        String athleteTrainer = reader.nextLine();
+        int athleteTrainerId = 0;
+        try {
+            ps = connection.prepareStatement("SELECT trainer_id FROM trainer WHERE trainer_name = '" + athleteTrainer + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            athleteTrainerId = rs.getInt(1);
+        } catch (SQLException e) {
+            // e.printStackTrace();
+            System.out.print("Nincs ilyen edző!");
+        }
+
+        try {
+            ps = connection.prepareStatement("INSERT INTO athlete (athlete_name, dob, nationality, org_id, trainer_id)\n" +
+                    "VALUES ('" + athleteName + "', '" + athleteDob + "', '" + athleteNationality + "', '" + Integer.toString(athleteOrgId) +
+                    "', '" + Integer.toString(athleteTrainerId) + "')");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
