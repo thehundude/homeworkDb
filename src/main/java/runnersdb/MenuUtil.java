@@ -47,6 +47,9 @@ public class MenuUtil {
                 if (canEdit == false) {
                     System.out.println("Érvénytelen menüpont!");
                 }
+                else {
+                    Athlete.modifyAthlete();
+                }
                 break;
             case 7:
                 if (canEdit == false) {

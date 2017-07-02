@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
@@ -170,6 +173,106 @@ public class Athlete {
         }
     }
 
+    // futó szerkesztése
+    public static void modifyAthlete() {
+        Connection connection = DbUtil.getConnection();
+        Scanner reader = new Scanner(System.in);
+
+        System.out.print("Írd be a futó nevét, akit módosítani szeretnél! ");
+        String modifyAthleteName = reader.nextLine();
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Athlete modifyAthlete = new Athlete();
+
+        String modifyAthleteTrainerName = null;
+        String modifyAthleteOrgName = null;
+
+        try {
+            ps = connection.prepareStatement("SELECT * FROM athlete WHERE athlete_name = '" + modifyAthleteName + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            modifyAthlete.setAthleteId(rs.getInt(1));
+            modifyAthlete.setTrainerId(rs.getInt(2));
+            modifyAthlete.setOrgId(rs.getInt(3));
+            modifyAthlete.setAthleteName(rs.getString(4));
+            modifyAthlete.setDob(rs.getDate(5));
+            modifyAthlete.setNationality(rs.getString(6));
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            System.out.print("Nincs ilyen futó!");
+            return;
+        }
+
+        try {
+            ps = connection.prepareStatement("SELECT org_name FROM organization WHERE org_id = '" + modifyAthlete.orgId + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            modifyAthleteOrgName = rs.getString(1);
+            ps = connection.prepareStatement("SELECT trainer_name FROM trainer WHERE trainer_id = '" + modifyAthlete.trainerId + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            modifyAthleteTrainerName = rs.getString(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print("A futó jelenlegi adatai:\nNeve: " + modifyAthlete.athleteName + "\nSzületési ideje: " +
+            modifyAthlete.dob + "\nNemzetisége: " + modifyAthlete.nationality + "\nKlubja: " + modifyAthleteOrgName +
+            "\nEdzője: " + modifyAthleteTrainerName + "\n\nAdd meg az új adatokat!\n");
+
+        System.out.print("Írd be a futó nevét:");
+        modifyAthlete.athleteName = reader.nextLine();
+
+        System.out.print("Mikor született? (ÉÉÉÉ-HH-NN formátumban)");
+        String dobString = reader.nextLine();
+        DateFormat df = new SimpleDateFormat("yyyy-mm-dd");
+        try {
+            modifyAthlete.dob = df.parse(dobString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        System.out.print("Milyen nemzetiségű?");
+        modifyAthlete.nationality = reader.nextLine();
+
+        System.out.print("Melyik sportegyesület tagja?");
+        String modifyAthleteOrg = reader.nextLine();
+        try {
+            ps = connection.prepareStatement("SELECT org_id FROM organization WHERE org_name = '" + modifyAthleteOrg + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            modifyAthlete.orgId = rs.getInt(1);
+        } catch (SQLException e) {
+            // e.printStackTrace();
+            System.out.print("Nincs ilyen sportegyesület!");
+        }
+
+        System.out.print("Ki az edzője?");
+        String modifyAthleteTrainer = reader.nextLine();
+        try {
+            ps = connection.prepareStatement("SELECT trainer_id FROM trainer WHERE trainer_name = '" + modifyAthleteTrainer + "'");
+            rs = ps.executeQuery();
+            rs.next();
+            modifyAthlete.trainerId = rs.getInt(1);
+        } catch (SQLException e) {
+            // e.printStackTrace();
+            System.out.print("Nincs ilyen edző!");
+        }
+
+        try {
+            ps = connection.prepareStatement("UPDATE athlete SET trainer_id = '" + modifyAthlete.trainerId +
+                "', org_id = '" + modifyAthlete.orgId + "', athlete_name = '" + modifyAthlete.athleteName +
+                "', dob = '" + modifyAthlete.dob + "', nationality = '" + modifyAthlete.nationality + "' WHERE " +
+                "athlete_id = " + modifyAthlete.athleteId);
+            ps.executeUpdate();
+            System.out.print("Sikerült az adatok frissítése!");
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // futó hozzáadása
     public static void addAthlete(){
         Connection connection = DbUtil.getConnection();
@@ -216,6 +319,7 @@ public class Athlete {
                     "VALUES ('" + athleteName + "', '" + athleteDob + "', '" + athleteNationality + "', '" + Integer.toString(athleteOrgId) +
                     "', '" + Integer.toString(athleteTrainerId) + "')");
             ps.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
