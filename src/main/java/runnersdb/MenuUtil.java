@@ -33,7 +33,9 @@ public class MenuUtil {
                 Athlete.clubAthletes();
                 break;
             case 2:
-                Athlete.topAthletes();
+                System.out.print("Hány futóra vagy kíváncsi?");
+                int i = reader.nextInt();
+                Athlete.topAthletes(i);
                 break;
             case 3:
                 break;

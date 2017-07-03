@@ -7,9 +7,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by tamas on 2017. 07. 01..
@@ -25,6 +23,8 @@ public class Athlete {
     private int firstPlace;
     private int secondPlace;
     private int thirdPlace;
+
+    private int performanceScore;
 
     public int getAthleteId() {
         return athleteId;
@@ -96,6 +96,14 @@ public class Athlete {
 
     public void setThirdPlace(int thirdPlace) {
         this.thirdPlace = thirdPlace;
+    }
+
+    public int getPerformanceScore() {
+        return performanceScore;
+    }
+
+    public void setPerformanceScore(int performanceScore) {
+        this.performanceScore = performanceScore;
     }
 
     // lekérdezésekhez használt függvények
@@ -172,8 +180,8 @@ public class Athlete {
     }
 
     // legjobb futók kiírása
-    public static void topAthletes() {
-        System.out.println("A legjobb futók:\nFutó neve\tSzül.idő\tNemzetiség\tI.\tII.\tIII.");
+    public static void topAthletes(int top) {
+        System.out.println("A legjobb " + top + " futó:\nFutó neve\tSzül.idő\tNemzetiség\tI.\tII.\tIII.");
 
         Connection connection = DbUtil.getConnection();
 
@@ -234,9 +242,26 @@ public class Athlete {
             e.printStackTrace();
         }
 
+        // teljesítményt értékelő pontszám kiszámítása
         for (Athlete item : athletes) {
-            System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\t" +
-                    item.secondPlace + "\t" + item.thirdPlace + "\n");
+            item.performanceScore = item.firstPlace * 3 + item.secondPlace * 2 + item.thirdPlace * 3;
+        }
+
+        // összehasonlítás - stackoverflownak köszönhetően
+        Collections.sort(athletes, new Comparator<Athlete>() {
+            public int compare(Athlete o1, Athlete o2) {
+                return o2.getPerformanceScore() - o1.getPerformanceScore();
+            }
+        });
+
+        // ha több futót kértünk volna be, mint amennyi a listában szerepel
+        if (top > athletes.size())
+            top = athletes.size();
+
+        for (int i = 0; i < top; i++) {
+            System.out.print(athletes.get(i).athleteName + "\t" + athletes.get(i).dob + "\t" + athletes.get(i).nationality +
+                    "\t" + athletes.get(i).firstPlace + "\t" + athletes.get(i).secondPlace + "\t" +
+                    athletes.get(i).thirdPlace + "\n");
         }
     }
 
