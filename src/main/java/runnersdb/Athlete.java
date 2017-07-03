@@ -140,10 +140,9 @@ public class Athlete {
 
             rs = ps.executeQuery();
 
-            while (rs.next()) {
-                for (Athlete item : athletes) {
-                    item.secondPlace = rs.getInt(1);
-                }
+            for (Athlete item : athletes) {
+                rs.next();
+                item.secondPlace = rs.getInt(1);
             }
 
             // itt csak a harmadik helyek számát kérjük le
@@ -156,10 +155,9 @@ public class Athlete {
 
             rs = ps.executeQuery();
 
-            while (rs.next()) {
-                for (Athlete item : athletes) {
-                    item.thirdPlace = rs.getInt(1);
-                }
+            for (Athlete item : athletes) {
+                rs.next();
+                item.thirdPlace = rs.getInt(1);
             }
 
             connection.close();
@@ -170,6 +168,75 @@ public class Athlete {
         for (Athlete item : athletes) {
             System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\t" +
             item.secondPlace + "\t" + item.thirdPlace + "\n");
+        }
+    }
+
+    // legjobb futók kiírása
+    public static void topAthletes() {
+        System.out.println("A legjobb futók:\nFutó neve\tSzül.idő\tNemzetiség\tI.\tII.\tIII.");
+
+        Connection connection = DbUtil.getConnection();
+
+        ArrayList<Athlete> athletes = new ArrayList();
+
+        try {
+            // lekérjük a futók adatait plusz az első helyek számát
+            PreparedStatement ps = connection.prepareStatement(
+                    "SELECT athlete.athlete_name, athlete.dob, athlete.nationality, COUNT(athlete_race.first_place) " +
+                            "FROM athlete " +
+                            "FULL OUTER JOIN athlete_race ON athlete_id = athlete_race.first_place " +
+                            "GROUP BY athlete.athlete_name, athlete.dob, athlete.nationality " +
+                            "ORDER BY athlete_name ASC");
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Athlete athlete = new Athlete();
+
+                athlete.setAthleteName(rs.getString(1));
+                athlete.setDob(rs.getDate(2));
+                athlete.setNationality(rs.getString(3));
+                athlete.setFirstPlace(rs.getInt(4));
+
+                athletes.add(athlete);
+            }
+
+            // itt csak a második helyek számát kérjük le
+            ps = connection.prepareStatement("SELECT COUNT(athlete_race.second_place)\n" +
+                    "FROM athlete\n" +
+                    "FULL OUTER JOIN athlete_race ON athlete.athlete_id = athlete_race.second_place\n" +
+                    "GROUP BY athlete.athlete_name, athlete.dob, athlete.nationality\n" +
+                    "ORDER BY athlete_name ASC");
+
+            rs = ps.executeQuery();
+
+            for (Athlete item : athletes) {
+                rs.next();
+                item.secondPlace = rs.getInt(1);
+            }
+
+            // itt csak a harmadik helyek számát kérjük le
+            ps = connection.prepareStatement("SELECT COUNT(athlete_race.third_place)\n" +
+                    "FROM athlete\n" +
+                    "FULL OUTER JOIN athlete_race ON athlete.athlete_id = athlete_race.third_place\n" +
+                    "GROUP BY athlete.athlete_name, athlete.dob, athlete.nationality\n" +
+                    "ORDER BY athlete_name ASC");
+
+            rs = ps.executeQuery();
+
+            for (Athlete item : athletes) {
+                rs.next();
+                item.thirdPlace = rs.getInt(1);
+            }
+
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        for (Athlete item : athletes) {
+            System.out.print(item.athleteName + "\t" + item.dob + "\t" + item.nationality + "\t" + item.firstPlace + "\t" +
+                    item.secondPlace + "\t" + item.thirdPlace + "\n");
         }
     }
 

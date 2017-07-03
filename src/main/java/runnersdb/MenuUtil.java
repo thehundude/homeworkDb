@@ -33,6 +33,7 @@ public class MenuUtil {
                 Athlete.clubAthletes();
                 break;
             case 2:
+                Athlete.topAthletes();
                 break;
             case 3:
                 break;
