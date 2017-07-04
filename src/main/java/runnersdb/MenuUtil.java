@@ -40,6 +40,7 @@ public class MenuUtil {
             case 3:
                 break;
             case 4:
+                Trainer.listTopTrainers();
                 break;
             case 5:
                 if (canEdit == false) {
