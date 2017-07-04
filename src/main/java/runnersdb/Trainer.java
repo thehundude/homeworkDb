@@ -1,12 +1,24 @@
 package runnersdb;
 
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 /**
  * Created by tamas on 2017. 07. 01..
@@ -163,6 +175,44 @@ public class Trainer {
 
             System.out.print(trainers.get(i).getCountFirst() + "\t" + trainers.get(i).getCountSecond() + "\t" +
             trainers.get(i).getCountThird() + "\n");
+        }
+
+        // apache poi
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet("Edzők");
+
+        int rownum = 1;
+        Row row = sheet.createRow(rownum);
+        String[] firstRow = {"Edző", "I. helyek", "II. helyek", "III. helyek"};
+        for (int i = 0; i < firstRow.length; i++) {
+            Cell cell = row.createCell(i);
+            cell.setCellValue(firstRow[i]);
+        }
+
+        for (Trainer item : trainers) {
+            row = sheet.createRow(rownum++);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(item.getName());
+            cell = row.createCell(1);
+            cell.setCellValue(item.getCountFirst());
+            cell = row.createCell(2);
+            cell.setCellValue(item.getCountSecond());
+            cell = row.createCell(3);
+            cell.setCellValue(item.getCountThird());
+        }
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        Date date = new Date();
+
+        try {
+            FileOutputStream out = new FileOutputStream(new File("C:\\testdir\\trainers" + dateFormat.format(date) + ".xls"));
+            workbook.write(out);
+            out.close();
+            System.out.println("Excel fájlba elmentve!");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
